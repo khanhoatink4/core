@@ -28,12 +28,12 @@ module.exports = async (config) => {
     const cacheOptions = config.cache.options
     cacheOptions.engine = require(cacheOptions.engine)
     baseConfig.cache = [cacheOptions]
-    baseConfig.routes.cache = { expiresIn: cacheOptions.expiresIn }
+    baseConfig.routes.cache = {expiresIn: cacheOptions.expiresIn}
   }
 
   const server = new Hapi.Server(baseConfig)
 
-  await server.register([require('vision'), require('inert'), require('lout')])
+  await server.register([require('inert'), require('vision'), require('lout')])
 
   await server.register({
     plugin: require('./plugins/whitelist'),
@@ -52,9 +52,9 @@ module.exports = async (config) => {
     }
   })
 
-  await server.register({ plugin: require('./plugins/caster') })
+  await server.register({plugin: require('./plugins/caster')})
 
-  await server.register({ plugin: require('./plugins/validation') })
+  await server.register({plugin: require('./plugins/validation')})
 
   await server.register({
     plugin: require('hapi-rate-limit'),

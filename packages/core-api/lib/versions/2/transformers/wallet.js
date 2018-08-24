@@ -11,6 +11,7 @@ module.exports = (model) => {
     publicKey: model.publicKey,
     secondPublicKey: model.secondPublicKey,
     balance: model.balance,
-    isDelegate: !!model.username
+    isDelegate: !!model.username,
+    isUltraNode: !!model.username
   }
 }
