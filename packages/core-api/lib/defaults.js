@@ -45,8 +45,7 @@ module.exports = {
       '/api/v2/wallets/{id}/transactions/received',
       '/api/v2/wallets/{id}/transactions/sent',
       '/api/v2/wallets/{id}/votes',
-      '/api/v2/wallets/search',
-      '/api/v2/ultranodes'
+      '/api/v2/wallets/search'
     ]
   },
   whitelist: [
