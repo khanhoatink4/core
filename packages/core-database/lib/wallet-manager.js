@@ -33,6 +33,7 @@ module.exports = class WalletManager {
     this.walletsByAddress = {}
     this.walletsByPublicKey = {}
     this.walletsByUsername = {}
+    this.walletsByUltraNode = {}
   }
 
   /**
@@ -60,6 +61,10 @@ module.exports = class WalletManager {
 
     if (wallet.username) {
       this.walletsByUsername[wallet.username] = wallet
+    }
+
+    if (wallet.ultra_node) {
+      this.walletsByUltraNode[wallet.ultra_node] = wallet
     }
   }
 
@@ -205,8 +210,8 @@ module.exports = class WalletManager {
    * @return {Transaction}
    */
   async applyTransaction (transaction) { /* eslint padded-blocks: "off" */
-    const { data } = transaction
-    const { type, asset, recipientId, senderPublicKey } = data
+    const {data} = transaction
+    const {type, asset, recipientId, senderPublicKey} = data
 
     const sender = this.getWalletByPublicKey(senderPublicKey)
     let recipient = recipientId ? this.getWalletByAddress(recipientId) : null
@@ -221,7 +226,12 @@ module.exports = class WalletManager {
       logger.error(`Delegate transaction sent by ${sender.address}`, JSON.stringify(data))
       throw new Error(`Can't apply transaction ${data.id}: delegate name already taken`)
 
-    // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
+      // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
+    } else if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION && this.walletsByUltraNode[asset.ultranode.username.toLowerCase()]) {
+
+      logger.error(`Ultranode transaction sent by ${sender.address}`, JSON.stringify(data))
+      throw new Error(`Can't apply transaction ${data.id}: delegate name already taken`)
+
     } else if (type === TRANSACTION_TYPES.VOTE && !this.walletsByPublicKey[asset.votes[0].slice(1)]) {
 
       logger.error(`Vote transaction sent by ${sender.address}`, JSON.stringify(data))
@@ -244,6 +254,10 @@ module.exports = class WalletManager {
       this.reindex(sender)
     }
 
+    if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      this.reindex(sender)
+    }
+
     if (recipient && type === TRANSACTION_TYPES.TRANSFER) {
       recipient.applyTransactionToRecipient(data)
     }
@@ -259,7 +273,7 @@ module.exports = class WalletManager {
    * @param  {Object} data
    * @return {Transaction}
    */
-  async revertTransaction ({ type, data }) {
+  async revertTransaction ({type, data}) {
     const sender = this.getWalletByPublicKey(data.senderPublicKey) // Should exist
     const recipient = this.getWalletByAddress(data.recipientId)
 
@@ -269,12 +283,14 @@ module.exports = class WalletManager {
     if (data.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
       this.walletsByUsername[data.asset.delegate.username] = null
     }
-
+    if (data.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      this.walletsByUltraNode[data.asset.ultranode.username] = null
+    }
     if (recipient && type === TRANSACTION_TYPES.TRANSFER) {
       recipient.revertTransactionForRecipient(data)
     }
 
-   this.__emitEvent('transaction.reverted', data)
+    this.__emitEvent('transaction.reverted', data)
 
     return data
   }
@@ -316,7 +332,14 @@ module.exports = class WalletManager {
   getWalletByUsername (username) {
     return this.walletsByUsername[username]
   }
-
+  /**
+   * Get a wallet by the given username ultranode.
+   * @param  {String} publicKey
+   * @return {Wallet}
+   */
+  getWalletByUltranode (username) {
+    return this.walletsByUltraNode[username]
+  }
   /**
    * Getter for "walletsByUsername" for clear intent.
    * @return {Wallet}
@@ -368,20 +391,22 @@ module.exports = class WalletManager {
    * @return {void}
    */
   __emitTransactionEvents (transaction) {
-   this.__emitEvent('transaction.applied', transaction.data)
+    this.__emitEvent('transaction.applied', transaction.data)
 
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
-     this.__emitEvent('delegate.registered', transaction.data)
+      this.__emitEvent('delegate.registered', transaction.data)
     }
-
+    if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      this.__emitEvent('ultranode.registered', transaction.data)
+    }
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_RESIGNATION) {
-     this.__emitEvent('delegate.resigned', transaction.data)
+      this.__emitEvent('delegate.resigned', transaction.data)
     }
 
     if (transaction.type === TRANSACTION_TYPES.VOTE) {
       const vote = transaction.asset.votes[0]
 
-     this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
+      this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
         delegate: vote,
         transaction: transaction.data
       })

@@ -27,6 +27,7 @@ module.exports = {
       secondPublicKey: Sequelize.STRING(66),
       vote: Sequelize.STRING(66),
       username: Sequelize.STRING(64),
+      ultranode: Sequelize.STRING(64),
       balance: Sequelize.BIGINT,
       votebalance: Sequelize.BIGINT,
       producedBlocks: Sequelize.BIGINT,
@@ -41,7 +42,7 @@ module.exports = {
       }
     })
 
-    queryInterface.addIndex('wallets', ['address', 'publicKey', 'vote', 'username'])
+    queryInterface.addIndex('wallets', ['address', 'publicKey', 'vote', 'username', 'ultranode'])
   },
   /**
    * Reverse the migrations.

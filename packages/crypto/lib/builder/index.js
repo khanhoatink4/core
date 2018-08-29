@@ -16,6 +16,14 @@ class TransactionBuilderDirector {
   }
 
   /**
+   * Create new delegate transaction type.
+   * @return {UltranodeRegistrationBuilder}
+   */
+  ultranodeRegistration () {
+    return this.__getTransaction('ultranode-registration')
+  }
+
+  /**
    * Create new IPFS transaction type.
    * @return {IPFSBuilder}
    */
