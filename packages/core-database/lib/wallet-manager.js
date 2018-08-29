@@ -2,10 +2,10 @@
 
 const Promise = require('bluebird')
 
-const {map, orderBy, sumBy} = require('lodash')
-const {crypto} = require('@arkecosystem/crypto')
-const {Wallet} = require('@arkecosystem/crypto').models
-const {TRANSACTION_TYPES} = require('@arkecosystem/crypto').constants
+const { map, orderBy, sumBy } = require('lodash')
+const { crypto } = require('@arkecosystem/crypto')
+const { Wallet } = require('@arkecosystem/crypto').models
+const { TRANSACTION_TYPES } = require('@arkecosystem/crypto').constants
 const container = require('@arkecosystem/core-container')
 const config = container.resolvePlugin('config')
 const logger = container.resolvePlugin('logger')
@@ -210,8 +210,8 @@ module.exports = class WalletManager {
    * @return {Transaction}
    */
   async applyTransaction (transaction) { /* eslint padded-blocks: "off" */
-    const {data} = transaction
-    const {type, asset, recipientId, senderPublicKey} = data
+    const { data } = transaction
+    const { type, asset, recipientId, senderPublicKey } = data
 
     const sender = this.getWalletByPublicKey(senderPublicKey)
     let recipient = recipientId ? this.getWalletByAddress(recipientId) : null
@@ -273,7 +273,7 @@ module.exports = class WalletManager {
    * @param  {Object} data
    * @return {Transaction}
    */
-  async revertTransaction ({type, data}) {
+  async revertTransaction ({ type, data }) {
     const sender = this.getWalletByPublicKey(data.senderPublicKey) // Should exist
     const recipient = this.getWalletByAddress(data.recipientId)
 
@@ -290,7 +290,7 @@ module.exports = class WalletManager {
       recipient.revertTransactionForRecipient(data)
     }
 
-    this.__emitEvent('transaction.reverted', data)
+   this.__emitEvent('transaction.reverted', data)
 
     return data
   }

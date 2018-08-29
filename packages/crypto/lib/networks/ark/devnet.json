@@ -15,12 +15,12 @@
   },
   "constants": [{
     "height": 1,
-    "reward": 2500000000,
+    "reward": 0,
     "activeDelegates": 37,
     "blocktime": 5,
     "block": {
       "version": 0,
-      "maxTransactions": 150,
+      "maxTransactions": 50,
       "maxPayload": 2097152
     },
     "epoch": "2018-03-21T13:00:00.000Z",
@@ -49,8 +49,14 @@
       "delegateResignation": 500
     }
   }, {
-    "height": 75600,
+    "height": 10800,
     "reward": 2500000000
+  }, {
+    "height": 21600,
+    "block": {
+      "maxTransactions": 150,
+      "maxPayload": 6300000
+    }
   }],
   "exceptions": {
   }
