@@ -12,7 +12,7 @@ module.exports = {
    * @return {void}
    */
   async up (queryInterface, Sequelize) {
-    await queryInterface.removeIndex('wallets', ['address', 'publicKey', 'vote', 'username'])
+    await queryInterface.removeIndex('wallets', ['address', 'publicKey', 'vote', 'username', 'ultranode'])
 
     await queryInterface.renameColumn('wallets', 'publicKey', 'public_key')
     await queryInterface.renameColumn('wallets', 'secondPublicKey', 'second_public_key')
@@ -21,8 +21,9 @@ module.exports = {
     await queryInterface.renameColumn('wallets', 'missedBlocks', 'missed_blocks')
     await queryInterface.renameColumn('wallets', 'createdAt', 'created_at')
     await queryInterface.renameColumn('wallets', 'updatedAt', 'updated_at')
+    await queryInterface.renameColumn('wallets', 'ultranode', 'ultra_node')
 
-    return queryInterface.addIndex('wallets', ['address', 'public_key', 'vote', 'username'])
+    return queryInterface.addIndex('wallets', ['address', 'public_key', 'vote', 'username', 'ultra_node'])
   },
 
   /**
@@ -32,7 +33,7 @@ module.exports = {
    * @return {void}
    */
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeIndex('wallets', ['address', 'public_key', 'vote', 'username'])
+    await queryInterface.removeIndex('wallets', ['address', 'public_key', 'vote', 'username', 'ultra_node'])
 
     await queryInterface.renameColumn('wallets', 'updated_at', 'updatedAt')
     await queryInterface.renameColumn('wallets', 'created_at', 'createdAt')
@@ -42,6 +43,6 @@ module.exports = {
     await queryInterface.renameColumn('wallets', 'second_public_key', 'secondPublicKey')
     await queryInterface.renameColumn('wallets', 'public_key', 'publicKey')
 
-    return queryInterface.addIndex('wallets', ['address', 'publicKey', 'vote', 'username'])
+    return queryInterface.addIndex('wallets', ['address', 'publicKey', 'vote', 'username', 'ultranode'])
   }
 }

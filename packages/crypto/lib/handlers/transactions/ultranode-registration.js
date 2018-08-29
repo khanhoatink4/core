@@ -1,6 +1,6 @@
 const Handler = require('./handler')
 
-class DelegateRegistrationHandler extends Handler {
+class UltranodeRegistrationHandler extends Handler {
   /**
    * Check if the transaction can be applied to the wallet.
    * @param  {Wallet} wallet
@@ -11,9 +11,7 @@ class DelegateRegistrationHandler extends Handler {
     if (!super.canApply(wallet, transaction)) {
       return false
     }
-
     const ultra_node = transaction.asset.ultranode.username
-
     return !wallet.ultra_node && ultra_node && ultra_node === ultra_node.toLowerCase()
   }
 
@@ -38,4 +36,4 @@ class DelegateRegistrationHandler extends Handler {
   }
 }
 
-module.exports = new DelegateRegistrationHandler()
+module.exports = new UltranodeRegistrationHandler()

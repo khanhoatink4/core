@@ -9,8 +9,7 @@ const container = require('@arkecosystem/core-container')
 const config = container.resolvePlugin('config')
 const database = container.resolvePlugin('database')
 const logger = container.resolvePlugin('logger')
-const transactionPool = container.resolvePlugin('transactansactionionPool')
-
+const transactionPool = container.resolvePlugin('transactionPool')
 const utils = require('../utils')
 const schema = require('../schema/transactions')
 

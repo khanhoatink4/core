@@ -229,7 +229,7 @@ module.exports = class WalletManager {
       // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
     } else if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION && this.walletsByUltraNode[asset.ultranode.username.toLowerCase()]) {
 
-      logger.error(`Delegate transaction sent by ${sender.address}`, JSON.stringify(data))
+      logger.error(`Ultranode transaction sent by ${sender.address}`, JSON.stringify(data))
       throw new Error(`Can't apply transaction ${data.id}: delegate name already taken`)
 
     } else if (type === TRANSACTION_TYPES.VOTE && !this.walletsByPublicKey[asset.votes[0].slice(1)]) {
@@ -251,6 +251,10 @@ module.exports = class WalletManager {
     sender.applyTransactionToSender(data)
 
     if (type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
+      this.reindex(sender)
+    }
+
+    if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
       this.reindex(sender)
     }
 
@@ -279,7 +283,9 @@ module.exports = class WalletManager {
     if (data.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
       this.walletsByUsername[data.asset.delegate.username] = null
     }
-
+    if (data.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      this.walletsByUltraNode[data.asset.ultranode.username] = null
+    }
     if (recipient && type === TRANSACTION_TYPES.TRANSFER) {
       recipient.revertTransactionForRecipient(data)
     }
@@ -326,7 +332,14 @@ module.exports = class WalletManager {
   getWalletByUsername (username) {
     return this.walletsByUsername[username]
   }
-
+  /**
+   * Get a wallet by the given username ultranode.
+   * @param  {String} publicKey
+   * @return {Wallet}
+   */
+  getWalletByUltranode (username) {
+    return this.walletsByUltraNode[username]
+  }
   /**
    * Getter for "walletsByUsername" for clear intent.
    * @return {Wallet}
@@ -383,7 +396,9 @@ module.exports = class WalletManager {
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
       this.__emitEvent('delegate.registered', transaction.data)
     }
-
+    if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      this.__emitEvent('ultranode.registered', transaction.data)
+    }
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_RESIGNATION) {
       this.__emitEvent('delegate.resigned', transaction.data)
     }

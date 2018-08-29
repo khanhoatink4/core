@@ -1,12 +1,12 @@
 'use strict'
 const container = require('@arkecosystem/core-container')
-const { Wallet } = require('@arkecosystem/crypto').models
-const { WalletManager } = require('@arkecosystem/core-database')
+const {Wallet} = require('@arkecosystem/crypto').models
+const {WalletManager} = require('@arkecosystem/core-database')
 const logger = container.resolvePlugin('logger')
 const database = container.resolvePlugin('database')
 const config = container.resolvePlugin('config')
-const { crypto } = require('@arkecosystem/crypto')
-const { TRANSACTION_TYPES } = require('@arkecosystem/crypto').constants
+const {crypto} = require('@arkecosystem/crypto')
+const {TRANSACTION_TYPES} = require('@arkecosystem/crypto').constants
 
 module.exports = class PoolWalletManager extends WalletManager {
   /**
@@ -85,10 +85,11 @@ module.exports = class PoolWalletManager extends WalletManager {
    * @return {Transaction}
    */
   async applyPoolTransaction (transaction) { /* eslint padded-blocks: "off" */
-    const { data } = transaction
-    const { type, asset, recipientId, senderPublicKey } = data
+    const {data} = transaction
+    const {type, asset, recipientId, senderPublicKey} = data
 
     const sender = this.getWalletByPublicKey(senderPublicKey)
+    console.log('Sender : ', sender)
     let recipient = recipientId ? this.getWalletByAddress(recipientId) : null
 
     if (!recipient && recipientId) { // cold wallet
@@ -100,7 +101,13 @@ module.exports = class PoolWalletManager extends WalletManager {
       logger.error(`PoolWalletManager: Delegate transaction sent by ${sender.address}`, JSON.stringify(data))
       throw new Error(`PoolWalletManager: Can't apply transaction ${data.id}: delegate name already taken`)
 
-    // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
+      // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
+    } else if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION && database.walletManager.walletsByUltraNode[asset.ultranode.username.toLowerCase()]) {
+
+      logger.error(`PoolWalletManager: Ultranode transaction sent by ${sender.address}`, JSON.stringify(data))
+      throw new Error(`PoolWalletManager: Can't apply transaction ${data.id}: delegate name already taken`)
+
+      // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
     } else if (type === TRANSACTION_TYPES.VOTE && !database.walletManager.walletsByPublicKey[asset.votes[0].slice(1)]) {
 
       logger.error(`PoolWalletManager: Vote transaction sent by ${sender.address}`, JSON.stringify(data))
