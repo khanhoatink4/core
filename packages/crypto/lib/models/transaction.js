@@ -203,6 +203,20 @@ module.exports = class Transaction {
       // delegate resignation - empty payload
     }
 
+    // register ultranode - ltt
+    if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      const ultranodeBytes = Buffer.from(transaction.asset.ultranode.username, 'utf8')
+      bb.writeByte(ultranodeBytes.length)
+      bb.append(ultranodeBytes, 'hex')
+    }
+
+    // attach info
+    if (transaction.type === TRANSACTION_TYPES.ATTACH_INFO) {
+      const attachInfoBytes = Buffer.from(transaction.asset.attachInfo.kdspHash, 'utf8')
+      bb.writeByte(attachInfoBytes.length)
+      bb.append(attachInfoBytes, 'hex')
+    }
+
     if (transaction.signature) {
       bb.append(transaction.signature, 'hex')
     }
@@ -340,6 +354,24 @@ module.exports = class Transaction {
 
     if (!transaction.amount) { // this is needed for computation over the blockchain
       transaction.amount = 0
+    }
+
+    /**
+     * Register Ultranode - LTT
+     * */
+    if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
+      const usernamelength = buf.readInt8(assetOffset / 2) & 0xff
+      transaction.asset = {
+        ultranode: {
+          username: buf.slice(assetOffset / 2 + 1, assetOffset / 2 + 1 + usernamelength).toString('utf8')
+        }
+      }
+      Transaction.parseSignatures(hexString, transaction, assetOffset + (usernamelength + 1) * 2)
+    }
+
+    // attach info
+    if (transaction.type === TRANSACTION_TYPES.ATTACH_INFO) {
+
     }
 
     if (!transaction.version || transaction.version === 1) {

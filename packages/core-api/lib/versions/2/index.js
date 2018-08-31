@@ -7,6 +7,7 @@ const peers = require('./handlers/peers')
 const transactions = require('./handlers/transactions')
 const votes = require('./handlers/votes')
 const wallets = require('./handlers/wallets')
+const attachInfo = require('./handlers/attach-info')
 
 /**
  * Register the v2 routes.
@@ -55,7 +56,11 @@ const register = async (server, options) => {
     { method: 'GET', path: '/wallets/{id}/transactions/sent', ...wallets.transactionsSent },
     { method: 'GET', path: '/wallets/{id}/transactions/received', ...wallets.transactionsReceived },
     { method: 'GET', path: '/wallets/{id}/votes', ...wallets.votes },
-    { method: 'POST', path: '/wallets/search', ...wallets.search }
+    { method: 'POST', path: '/wallets/search', ...wallets.search },
+
+    {method: 'GET', path: '/attachInfo', ...attachInfo.index},
+    {method: 'GET', path: '/attachInfo/{kdspHash}', ...attachInfo.show}
+
   ])
 }
 
