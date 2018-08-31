@@ -233,6 +233,11 @@ module.exports = class Wallet {
       audit.push({'New username': username})
     }
 
+    if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION){
+      const ultra_node = transaction.asset.ultranode.username
+      audit.push({'Current username ultranode': this.ultra_node})
+      audit.push({'New username ultranode': ultra_node})
+    }
     if (transaction.type === TRANSACTION_TYPES.VOTE) {
       audit.push({'Current vote': this.vote})
       audit.push({'New vote': transaction.asset.votes[0]})
