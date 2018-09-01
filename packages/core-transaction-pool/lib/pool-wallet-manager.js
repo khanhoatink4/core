@@ -107,6 +107,10 @@ module.exports = class PoolWalletManager extends WalletManager {
       logger.error(`PoolWalletManager: Can't apply vote transaction: delegate ${asset.votes[0]} does not exist.`, JSON.stringify(data))
       throw new Error(`PoolWalletManager: Can't apply transaction ${data.id}: delegate ${asset.votes[0]} does not exist.`)
 
+    } else if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION && database.walletManager.walletsByUltraNode[asset.ultranode.username.toLowerCase()]) {
+      logger.error(`PoolWalletManager: Ultranode transaction sent by ${sender.address}`, JSON.stringify(data))
+      throw new Error(`PoolWalletManager: Can't apply transaction ${data.id}: delegate name already taken`)
+      // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
     } else if (config.network.exceptions[data.id]) {
 
       logger.warn('Transaction forcibly applied because it has been added as an exception:', data)
