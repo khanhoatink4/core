@@ -18,12 +18,6 @@ const register = async (server, options) => {
       }
 
       if (!container.resolvePlugin('blockchain')) {
-        if (request.path.startsWith('/peer')) {
-          return h.response({
-            success: false
-          }).code(200).takeover()
-        }
-
         return Boom.serverUnavailable('Blockchain not ready')
       }
 
@@ -37,7 +31,7 @@ const register = async (server, options) => {
  * @type {Object}
  */
 exports.plugin = {
-  name: 'core-p2p-blockchain-ready',
+  name: 'blockchain-ready',
   version: '0.1.0',
   register
 }

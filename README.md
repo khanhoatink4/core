@@ -1,3 +1,5 @@
+![ARK Core](https://i.imgur.com/1aP6F2o.png)
+
 # ARK Core
 
 ## Introduction
@@ -6,13 +8,13 @@ This repository contains all plugins that make up the ARK Core.
 
 ## Documentation
 
-- Development : https://docs.ark.io/v1.0/docs/development
-- Docker : https://docs.ark.io/v1.0/docs/docker
+- Development : https://docs.ark.io/core/development.html
+- Docker : https://docs.ark.io/core/docker.html
 
 ## API Documentation
 
-- API v1 & v2 : https://docs.ark.io/v1.0/reference
-- Swaager API: http://0.0.0.0:4003/documentation#/
+- API v1 : https://docs.ark.io/developers/api/public/v1/
+- API v2 : https://docs.ark.io/developers/api/public/v2/
 
 ## Run testnet
   - `yarn global add lerna`

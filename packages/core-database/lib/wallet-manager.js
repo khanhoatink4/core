@@ -120,10 +120,10 @@ module.exports = class WalletManager {
    * @param  {Block} block
    * @return {void}
    */
-  async applyBlock (block) {
+  applyBlock (block) {
     const generatorPublicKey = block.data.generatorPublicKey
 
-    let delegate = this.getWalletByPublicKey(block.data.generatorPublicKey)
+    let delegate = this.findByPublicKey(block.data.generatorPublicKey)
 
     if (!delegate) {
       const generator = crypto.getAddress(generatorPublicKey, config.network.pubKeyHash)
@@ -148,7 +148,7 @@ module.exports = class WalletManager {
 
     try {
       for (let i = 0; i < block.transactions.length; i++) {
-        await this.applyTransaction(block.transactions[i])
+        this.applyTransaction(block.transactions[i])
 
         appliedTransactions.push(block.transactions[i])
       }
@@ -159,7 +159,7 @@ module.exports = class WalletManager {
 
       // Revert the applied transactions from last to first
       for (let i = appliedTransactions.length - 1; i >= 0; i--) {
-        await this.revertTransaction(appliedTransactions[i])
+        this.revertTransaction(appliedTransactions[i])
       }
 
       // TODO should revert the delegate applyBlock ?
@@ -174,7 +174,7 @@ module.exports = class WalletManager {
    * @return {void}
    */
   async revertBlock (block) {
-    let delegate = this.getWalletByPublicKey(block.data.generatorPublicKey)
+    let delegate = this.findByPublicKey(block.data.generatorPublicKey)
 
     if (!delegate) {
       const generator = crypto.getAddress(block.data.generatorPublicKey, config.network.pubKeyHash)
@@ -209,23 +209,20 @@ module.exports = class WalletManager {
    * @param  {Transaction} transaction
    * @return {Transaction}
    */
-  async applyTransaction (transaction) { /* eslint padded-blocks: "off" */
+  applyTransaction (transaction) { /* eslint padded-blocks: "off" */
     const { data } = transaction
     const { type, asset, recipientId, senderPublicKey } = data
 
-    const sender = this.getWalletByPublicKey(senderPublicKey)
-    let recipient = recipientId ? this.getWalletByAddress(recipientId) : null
+    const sender = this.findByPublicKey(senderPublicKey)
+    const recipient = this.findByAddress(recipientId)
 
-    if (!recipient && recipientId) { // cold wallet
-      recipient = new Wallet(recipientId)
-      this.walletsByAddress[recipientId] = recipient
-      this.__emitEvent('wallet:cold:created', recipient)
+    if (type === TRANSACTION_TYPES.DELEGATE_REGISTRATION && this.walletsByUsername[asset.delegate.username.toLowerCase()]) {
 
-    } else if (type === TRANSACTION_TYPES.DELEGATE_REGISTRATION && this.walletsByUsername[asset.delegate.username.toLowerCase()]) {
+      logger.error(`Can't apply transaction ${data.id}: delegate name already taken.`, JSON.stringify(data))
+      throw new Error(`Can't apply transaction ${data.id}: delegate name already taken.`)
 
-      logger.error(`Delegate transaction sent by ${sender.address}`, JSON.stringify(data))
-      throw new Error(`Can't apply transaction ${data.id}: delegate name already taken`)
-
+    // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
+    } else if (type === TRANSACTION_TYPES.VOTE && !this.__isDelegate(asset.votes[0].slice(1))) {
       // NOTE: We use the vote public key, because vote transactions have the same sender and recipient
     } else if (type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION && this.walletsByUltraNode[asset.ultranode.username.toLowerCase()]) {
 
@@ -234,9 +231,11 @@ module.exports = class WalletManager {
 
     } else if (type === TRANSACTION_TYPES.VOTE && !this.walletsByPublicKey[asset.votes[0].slice(1)]) {
 
-      logger.error(`Vote transaction sent by ${sender.address}`, JSON.stringify(data))
-      throw new Error(`Can't apply transaction ${data.id}: voted/unvoted delegate does not exist`)
+      logger.error(`Can't apply vote transaction: delegate ${asset.votes[0]} does not exist.`, JSON.stringify(data))
+      throw new Error(`Can't apply transaction ${data.id}: delegate ${asset.votes[0]} does not exist.`)
 
+    } else if (type === TRANSACTION_TYPES.SECOND_SIGNATURE) {
+      data.recipientId = ''
     } else if (config.network.exceptions[data.id]) {
 
       logger.warn('Transaction forcibly applied because it has been added as an exception:', data)
@@ -273,9 +272,9 @@ module.exports = class WalletManager {
    * @param  {Object} data
    * @return {Transaction}
    */
-  async revertTransaction ({ type, data }) {
-    const sender = this.getWalletByPublicKey(data.senderPublicKey) // Should exist
-    const recipient = this.getWalletByAddress(data.recipientId)
+  revertTransaction ({ type, data }) {
+    const sender = this.findByPublicKey(data.senderPublicKey) // Should exist
+    const recipient = this.findByAddress(data.recipientId)
 
     sender.revertTransactionForSender(data)
 
@@ -296,28 +295,32 @@ module.exports = class WalletManager {
   }
 
   /**
-   * Get a wallet by the given address.
+   * Find a wallet by the given address.
    * @param  {String} address
    * @return {(Wallet|null)}
    */
-  getWalletByAddress (address) {
+  findByAddress (address) {
     if (!this.walletsByAddress[address]) {
       this.walletsByAddress[address] = new Wallet(address)
+
+      if (process.env.NODE_ENV !== 'test') {
+        this.__emitEvent('wallet:cold:created', this.walletsByAddress[address])
+      }
     }
 
     return this.walletsByAddress[address]
   }
 
   /**
-   * Get a wallet by the given public key.
+   * Find a wallet by the given public key.
    * @param  {String} publicKey
    * @return {Wallet}
    */
-  getWalletByPublicKey (publicKey) {
+  findByPublicKey (publicKey) {
     if (!this.walletsByPublicKey[publicKey]) {
       const address = crypto.getAddress(publicKey, config.network.pubKeyHash)
 
-      this.walletsByPublicKey[publicKey] = this.getWalletByAddress(address)
+      this.walletsByPublicKey[publicKey] = this.findByAddress(address)
       this.walletsByPublicKey[publicKey].publicKey = publicKey
     }
 
@@ -325,11 +328,11 @@ module.exports = class WalletManager {
   }
 
   /**
-   * Get a wallet by the given username.
+   * Find a wallet by the given username.
    * @param  {String} publicKey
    * @return {Wallet}
    */
-  getWalletByUsername (username) {
+  findByUsername (username) {
     return this.walletsByUsername[username]
   }
   /**
@@ -365,6 +368,19 @@ module.exports = class WalletManager {
   }
 
   /**
+   * Checks if a given publicKey is a registered delegate
+   * @param {String} publicKey
+   */
+  __isDelegate (publicKey) {
+    const delegateWallet = this.walletsByPublicKey[publicKey]
+    if (delegateWallet && delegateWallet.username) {
+      return !!this.walletsByUsername[delegateWallet.username]
+    }
+
+    return false
+  }
+
+  /**
    * Determine if the wallet can be removed from memory.
    * @param  {Object} wallet
    * @return {Boolean}
@@ -391,22 +407,22 @@ module.exports = class WalletManager {
    * @return {void}
    */
   __emitTransactionEvents (transaction) {
-    this.__emitEvent('transaction.applied', transaction.data)
+   this.__emitEvent('transaction.applied', transaction.data)
 
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
-      this.__emitEvent('delegate.registered', transaction.data)
+     this.__emitEvent('delegate.registered', transaction.data)
     }
     if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
       this.__emitEvent('ultranode.registered', transaction.data)
     }
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_RESIGNATION) {
-      this.__emitEvent('delegate.resigned', transaction.data)
+     this.__emitEvent('delegate.resigned', transaction.data)
     }
 
     if (transaction.type === TRANSACTION_TYPES.VOTE) {
       const vote = transaction.asset.votes[0]
 
-      this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
+     this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
         delegate: vote,
         transaction: transaction.data
       })
