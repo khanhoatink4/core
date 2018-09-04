@@ -513,5 +513,6 @@ module.exports = class ConnectionInterface {
   async _registerRepositories () {
     this['wallets'] = new (require('./repositories/wallets'))(this)
     this['delegates'] = new (require('./repositories/delegates'))(this)
+    this['ultranode'] = new (require('./repositories/ultranode'))(this)
   }
 }

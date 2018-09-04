@@ -11,3 +11,12 @@ exports.index = {
     limit: Joi.number().integer()
   }
 }
+
+/**
+ * @type {Object}
+ */
+exports.show = {
+  params: {
+    id: Joi.string()
+  }
+}

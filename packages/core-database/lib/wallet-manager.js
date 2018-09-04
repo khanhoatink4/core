@@ -347,7 +347,13 @@ module.exports = class WalletManager {
   getDelegates () {
     return Object.values(this.walletsByUsername)
   }
-
+  /**
+   * Get all wallets ultranode
+   * @return {Wallet}
+   */
+  getUltranodes () {
+    return Object.values(this.walletsByUltraNode)
+  }
   /**
    * Get all wallets by address.
    * @return {Array}

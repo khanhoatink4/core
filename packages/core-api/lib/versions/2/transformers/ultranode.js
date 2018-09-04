@@ -13,10 +13,11 @@ const formatTimestamp = require('./utils/format-timestamp')
  * @return {Object}
  */
 module.exports = (ultraNode) => {
-  const data = Transaction.deserialize(ultraNode.serialized.toString('hex'))
+  const data = ultraNode.serialized ? Transaction.deserialize(ultraNode.serialized.toString('hex')) : ultraNode
+  console.log(data.timestamp)
   return {
     username: data.asset.ultranode.username,
-    address: crypto.getAddress(data.senderPublicKey, config.network.pubKeyHash),
+    address: data.senderPublicKey ? crypto.getAddress(data.senderPublicKey, config.network.pubKeyHash) : data.address,
     publicKey: data.senderPublicKey,
     type: data.type,
     timestamp: formatTimestamp(data.timestamp)
