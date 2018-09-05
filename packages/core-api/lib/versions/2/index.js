@@ -36,6 +36,11 @@ const register = async (server, options) => {
     {method: 'POST', path: '/blocks/search', ...blocks.search},
 
     {method: 'GET', path: '/ultranodes', ...ultranode.index}, // Get list Ultra Node
+    {
+      method: 'GET',
+      path: '/ultranodes/{id}',
+      ...ultranode.show
+    }, // Check ultranode
 
     {method: 'GET', path: '/delegates', ...delegates.index},
     {method: 'GET', path: '/delegates/{id}', ...delegates.show},
