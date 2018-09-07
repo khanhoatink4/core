@@ -19,7 +19,7 @@ module.exports = async (config) => {
       cors: {
         origin: ['*'],
         credentials: true,
-        additionalHeaders: ['api-version', 'cache-control', 'x-requested-with']
+        additionalHeaders: ['api-version', 'cache-control', 'x-requested-with', 'nethash', 'port', 'version']
       },
       validate: {
         async failAction (request, h, err) {
