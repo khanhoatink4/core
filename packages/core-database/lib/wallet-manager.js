@@ -427,7 +427,7 @@ module.exports = class WalletManager {
       recipient.revertTransactionForRecipient(data)
     }
 
-   this.__emitEvent('transaction.reverted', data)
+    this.__emitEvent('transaction.reverted', data)
 
     return data
   }
@@ -472,22 +472,22 @@ module.exports = class WalletManager {
    * @return {void}
    */
   __emitTransactionEvents (transaction) {
-   this.__emitEvent('transaction.applied', transaction.data)
+    this.__emitEvent('transaction.applied', transaction.data)
 
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_REGISTRATION) {
-     this.__emitEvent('delegate.registered', transaction.data)
+      this.__emitEvent('delegate.registered', transaction.data)
     }
     if (transaction.type === TRANSACTION_TYPES.ULTRANODE_REGISTRATION) {
       this.__emitEvent('ultranode.registered', transaction.data)
     }
     if (transaction.type === TRANSACTION_TYPES.DELEGATE_RESIGNATION) {
-     this.__emitEvent('delegate.resigned', transaction.data)
+      this.__emitEvent('delegate.resigned', transaction.data)
     }
 
     if (transaction.type === TRANSACTION_TYPES.VOTE) {
       const vote = transaction.asset.votes[0]
 
-     this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
+      this.__emitEvent(vote.startsWith('+') ? 'wallet.vote' : 'wallet.unvote', {
         delegate: vote,
         transaction: transaction.data
       })

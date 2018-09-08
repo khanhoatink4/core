@@ -1,25 +1,29 @@
 {
   "minimumVersion": ">=1.1.1",
-  "minimumNetworkReach":3,
+  "minimumNetworkReach": 5,
   "globalTimeout": 5000,
-  "coldStart": 6,
+  "coldStart": 5,
   "whiteList": [],
   "blackList": [],
   "list": [
     {
-      "ip": "35.197.237.19",
+      "ip": "35.235.83.83",
       "port": 4002
     },
     {
-      "ip": "35.229.26.186",
+      "ip": "35.189.40.93",
       "port": 4002
     },
     {
-      "ip": "35.240.176.247",
+      "ip": "35.200.156.138",
       "port": 4002
     },
     {
-      "ip": "35.197.188.158",
+      "ip": "35.205.240.233",
+      "port": 4002
+    },
+    {
+      "ip": "35.194.240.177",
       "port": 4002
     }
   ]
